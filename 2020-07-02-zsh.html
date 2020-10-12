@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>zsh 启动项优化</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">zsh 启动项优化</h1>
+<p class="date">2020-07-02T21:59:14+08:00</p>
+</header>
+<h2 id="issues">Issues</h2>
+<p>When install oh-my-zsh directly in macOS Catalina, I find a warning in zsh: https://github.com/ohmyzsh/ohmyzsh/issues/6939</p>
+<p>And I fix this warning by run this command in the prompt:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="ex">compaudit</span> <span class="kw">|</span> <span class="fu">xargs</span> chmod g-w,o-w</span></code></pre></div>
+<p>But I don’t known why this problem appear. 上述命令似乎是更改了 zsh 对文件夹的权限，嘛没找到文档有空再找。</p>
+<h2 id="profiling-zsh-startup">Profiling zsh startup</h2>
+<p>zsh 的启动速度和 fish，bash 相比应该是最慢的，但 zsh 有历史命令补全和语法高亮等功能相比 bash 更加方便，而 fish 虽然内置功能很全但部分语法和 bash 不兼容，用来用去还是得用 zsh，但是 zsh 的启动总是随着装的环境变量越多而越慢，动辄 0.5S 以上的启动速度实在是忍受不了，需要优化一下。</p>
+<p>a measurement of the total time it takes to launch zsh, run</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="bu">time</span> zsh -i -c echo</span></code></pre></div>
+<p>And there are several ways to anaylse zsh startup time.</p>
+<p>This article is personally most recommend. The author write a simple script to analyse the result of zsh init log to find the command which use the longest time. https://esham.io/2018/02/zsh-profiling</p>
+<p>This article specific a simple way to identify the zsh inti command time usage. https://stevenvanbael.com/profiling-zsh-startup</p>
+<p>This article use a GUI tool to see the zsh init command time usage, but the GUI tool is a littel bit hard to use. https://best33.com/283.moe</p>
+<p>This article use a command to see the verbose log of zsh launch time: https://carlosbecker.com/posts/speeding-up-zsh and the command to find out where the slowness is:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="fu">zsh</span> -i -c -x exit</span></code></pre></div>
+<p>Use zinit instead of oh-my-zsh: https://tech.viewv.top/2020/07/03/zsh加速.html</p>
+<h2 id="resons-to-slow-zsh">Resons to slow zsh</h2>
+<ol type="1">
+<li>nvm, pyenv, conda, etc.</li>
+<li>brew auto update, brew –prefix, some lib add to path</li>
+<li>zsh plugins</li>
+</ol>
+<p>找到问题了，卸载了 nvm，需要其他版本的 node 用 docker 开一个；使用 pipenv 代替 pyenv。</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="co"># some method to optimize brew</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="co"># show installed package with depends</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="ex">brew</span> deps --installed --tree</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a><span class="co"># brew can use brew rmtree to remove formulae with all depends</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a><span class="ex">brew</span> rmtree <span class="op">&lt;</span>formulae<span class="op">&gt;</span></span></code></pre></div>
+<h2 id="test-result">Test Result</h2>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="co"># measure zsh startup time without config profile</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="bu">time</span> zsh --no-rcs -i -c exit</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="fu">zsh</span> --no-rcs -i -c exit  0.00s user 0.00s system 77% cpu 0.008 total</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="bu">time</span> zsh -i -c exit</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a><span class="fu">zsh</span> -i -c exit  0.09s user 0.06s system 86% cpu 0.181 total</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a> \<span class="bu">time</span> zsh -i -c exit</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>        <span class="ex">0.15</span> real         0.08 user         0.05 sys</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a><span class="co"># test for multiple times</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">i</span> in <span class="va">$(</span><span class="fu">seq</span> 1 10<span class="va">)</span><span class="kw">;</span> <span class="kw">do</span> <span class="ex">/usr/bin/time</span> zsh -i -c exit<span class="kw">;</span> <span class="kw">done</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a>        <span class="ex">0.14</span> real         0.08 user         0.05 sys</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a>        <span class="ex">0.13</span> real         0.08 user         0.05 sys</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a>        <span class="ex">0.12</span> real         0.07 user         0.04 sys</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a>        <span class="ex">0.13</span> real         0.08 user         0.04 sys</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a>        <span class="ex">0.13</span> real         0.08 user         0.05 sys</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a>        <span class="ex">0.14</span> real         0.08 user         0.05 sys</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a>        <span class="ex">0.12</span> real         0.07 user         0.04 sys</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a>        <span class="ex">0.13</span> real         0.07 user         0.04 sys</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a>        <span class="ex">0.13</span> real         0.08 user         0.05 sys</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a>        <span class="ex">0.13</span> real         0.07 user         0.04 sys</span></code></pre></div>
+<p>The Output with different configs:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="co"># Measuring initial startup time</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="bu">time</span> zsh -i -c exit</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a><span class="fu">zsh</span> -i -c exit  0.13s user 0.12s system 96% cpu 0.262 total</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a><span class="co"># Use oh-my-zsh avit theme:</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a><span class="fu">zsh</span> -i -c exit  0.09s user 0.05s system 94% cpu 0.147 total</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a><span class="co"># Use pure promot theme:</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a><span class="fu">zsh</span> -i -c exit  0.09s user 0.06s system 95% cpu 0.162 total</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a><span class="co"># Use oh-my-zsh with pure promot theme:</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a><span class="fu">zsh</span> -i -c exit  0.09s user 0.06s system 95% cpu 0.155 total</span></code></pre></div>
+<footer>
+  <hr />
+  <p>
+    <a href="../">
+      <span>← 返回上一级</span>
+    </a>
+  </p>
+  <p>
+    <span>许可证：</span>
+    <span
+      ><a
+        rel="license noopener"
+        href="https://creativecommons.org/licenses/by-nc-nd/4.0/"
+        target="_blank"
+        >CC BY-NC-ND 4.0</a
+      ></span
+    >
+  </p>
+</footer>
+</body>
+</html>

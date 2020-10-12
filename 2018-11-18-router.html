@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>斐讯 K2 路由器刷潘多拉固件</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">斐讯 K2 路由器刷潘多拉固件</h1>
+<p class="date">2018-11-18T11:29:40+08:00</p>
+</header>
+<p>拼夕夕花了 83 元新买了台斐讯 k2，经过大佬的帮助刷入了潘多拉固件，成功破解了闪讯的限制。简要的记录下过程备用：</p>
+<p>软件版本： 22.5.11.5 设备型号： K2 硬件版本： A2</p>
+<p>路由器刷固件的过程分为两步：</p>
+<ol type="1">
+<li>刷入 breed</li>
+<li>在 breed 的控制页面中刷入特定固件</li>
+</ol>
+<p><strong>create time: 2018.11.06</strong></p>
+<p><strong>last test success: 2019.05.09</strong></p>
+<h2 id="刷入-breed">刷入 breed</h2>
+<p>breed 类似 uboot，用于路由器的引导，刷了 breed 后，可以方便的刷第三方固件</p>
+<p>参考自：http://www.right.com.cn/forum/thread-325258-1-1.html</p>
+<h3 id="开启-telnet">1. 开启 telnet</h3>
+<p>对斐讯最新 K2 新版 22.6.511.69 ，需开启 telnet 刷 breed，其实就是定时重启漏洞变为定时更新漏洞</p>
+<ol type="1">
+<li><p>路由器上电，电脑或手机连接路由器热点，浏览器访问<code>192.168.2.1</code> , 进入路由设置页面 -&gt; 高级设置-&gt; 自动升级 -&gt; 自定义升级时间-&gt; 开启;</p></li>
+<li><p>点选时间中的右侧下拉分钟选择框，鼠标箭头放在 05 上，点击鼠标右键，在 Firefox 或傲游或 chrome 中 “审查元素”：</p></li>
+<li><p>双击“05”，改为你要执行的命令：</p></li>
+</ol>
+<p>改为：</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="dv">05</span> <span class="op">|</span> (<span class="ss">/usr/bins</span> <span class="ss">/ telnetd - l /</span> bin <span class="op">/</span> login<span class="op">.</span><span class="at">sh</span>)<span class="op">;</span></span></code></pre></div>
+<p>在定时重启路由器页面上重新选择 05 之后（这里要注意，一定要重选，并且重选后可以看到 05 后面自己输入的字符）：</p>
+<p>点击保存，就可以开启 telnet，通过其他终端连接到路由器。</p>
+<h3 id="刷入-breed-1">2. 刷入 breed</h3>
+<p>参考自：http://www.right.com.cn/forum/thread-208753-1-1.html</p>
+<p>​ http://www.iytc.net/wordpress/?p=1624 注：以上方法在 2019.05.09 测试失效</p>
+<p><strong>这步很关键，刷 breed 相当于 android 的 twrp，可以帮助用户安装第三方固件，并有效地防止路由器变砖！</strong></p>
+<ol type="1">
+<li>windows 命令行程序 telnet 登陆到路由器控制台，再输入如下语句即可刷入 breed（版本为 20180805）：</li>
+</ol>
+<pre class="shell"><code>wget http://iytc.net/down/k2_breed.sh -O -|sh</code></pre>
+<p>​ 本固件集成了最新的 breed，刷入后自动将 bootloader 更新为最新 breed。进行操作后，路由器会写 breed 并重启。如果路由器没有自动重启，说明操作过程有误，请仔细检查操作过程。</p>
+<h3 id="进入-breed">3.进入 Breed</h3>
+<ol type="1">
+<li>拔除 K2 上 Wan 口的网线，路由器断电，<strong>持续按住</strong>路由器上的 reset 按钮，接通路由器电源，3 秒后松开 reset 按钮。</li>
+<li>将 <strong>Wan 口与你的电脑网口</strong> 连接，在浏览器地址栏输入“http://192.168.1.1”访问Breed Web。</li>
+<li>进入 Breed Web 后，请及时进行原始 EEPROM、固件备份，然后再刷其他的固件。</li>
+</ol>
+<h2 id="刷入固件">4. 刷入固件</h2>
+<p>开刷前，请必须记得先「恢复出厂设置」-&gt;「Config 区 (公版)」，然后点「执行」</p>
+<figure>
+<img src="https://upload-images.jianshu.io/upload_images/3943248-f9504e433299dc24.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/650" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>固件下载地址：http://www.right.com.cn/forum/thread-161324-1-1.html</p>
+<p>(点击「恢复固件」-&gt;固件-&gt;浏览，选中你下载好的 K2 的固件文件，比如我这次是「RT-AC54U-GPIO-1-PSG1218-64M_3.4.3.9-099.trx」，点击「上传」即可)</p>
+<ol type="1">
+<li><p>选择对应的路由器型号的固件下载并刷入。</p></li>
+<li><p>成功刷入固件后，连接路由器网络，浏览器输入：192.168.123.1，进入路由器控制台 (如要求验证，默认用户名：admin，密码：admin)，即可看到如下图的潘多拉管理页面。</p></li>
+</ol>
+<figure>
+<img src="https://www.right.com.cn/forum/data/attachment/forum/201805/12/091415djuuqyy9n0uzhu8u.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<ol start="3" type="1">
+<li>外部网络中可安装各种工具，如闪讯破解工具，破除其一人一号的限制。</li>
+</ol>
+<footer>
+  <hr />
+  <p>
+    <a href="../">
+      <span>← 返回上一级</span>
+    </a>
+  </p>
+  <p>
+    <span>许可证：</span>
+    <span
+      ><a
+        rel="license noopener"
+        href="https://creativecommons.org/licenses/by-nc-nd/4.0/"
+        target="_blank"
+        >CC BY-NC-ND 4.0</a
+      ></span
+    >
+  </p>
+</footer>
+</body>
+</html>

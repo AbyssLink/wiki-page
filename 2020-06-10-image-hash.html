@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>图像哈希算法（JS 实现）</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">图像哈希算法（JS 实现）</h1>
+<p class="date">2020-06-10T16:44:06+08:00</p>
+</header>
+<h2 id="code">Code</h2>
+<p>https://github.com/AbyssLink/image-hash-js</p>
+<h2 id="图像数据结构">图像数据结构</h2>
+<p>矩阵（Matrix）是用于图像的低级表示的最常见的数据结构。本库中所处理的数字图像是一个具有整数像素数据的多维矩阵，由 CCD 摄像头输出。</p>
+<h2 id="基于哈希算法的图像分类">基于哈希算法的图像分类</h2>
+<p>模版匹配是一种最原始和基本的模式识别方法，研究某一特定对象物的图案位于图像的什么地方，进而识别对象物，是图像处理中最基本且常用的匹配方法。由于传送带的摄像头到传送带的位置是固定不变的，可以认为每次获取的待分类对象物在图像中的位置是固定的，通过拍摄物体在相同位置的的图像作为模版，从而省去在大图像中搜寻目标模版的操作，将模版匹配问题转换为更简单的基于相似度匹配的问题。 该方法具有自身的局限性，若原图像中的匹配目标发生旋转或大小变化，该方法失效。</p>
+<h3 id="感知哈希介绍">感知哈希介绍</h3>
+<p>使用感知哈希（Perceptual hash）算法可以提取图片的特征，为每张图片生成一个以 16 进制表示的特定长度的哈希值字符串，比较不同图片之间的哈希值字符串，两个哈希值字符串之间越相似即说明两张图片越相似。简要的实现流程如下所述：</p>
+<ol type="1">
+<li>图像预处理：根据特征点的定位旋转图像为正向，将原始图像规格化为预设大小</li>
+<li>计算哈希值：计算图像的哈希值</li>
+<li>比较两张图片的相似度：计算两个哈希值的汉明距离</li>
+<li>设置阈值：设置特定的阈值作出判断，如认为汉明距离小于 5 的图片非常相似，大于 10 的图片则认为不相似。</li>
+</ol>
+<h3 id="图像预处理">图像预处理</h3>
+<p>以分类交通标志为例，为摄像机捕获原图的示例如下：</p>
+<div data-align="center">
+<p><img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/org/001.jpeg" height="150px" alt="图片说明" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/org/002.jpeg" height="150px" alt="图片说明" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/org/003.jpeg" height="150px" alt="图片说明" ></p>
+</div>
+<p>对图片进行规格化处理，缩小到特定的尺寸 <span class="math inline">\(N * N\)</span>。以 <span class="math inline">\(N = 8\)</span> 为例，规格化后的图片包含 64 个像素：</p>
+<div data-align="center">
+<p><img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/001_resize.jpg" height="150px" alt="图片说明" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/002_resize.jpg" height="150px" alt="图片说明" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/003_resize.jpg" height="150px" alt="图片说明" ></p>
+</div>
+<p>将图片转为 64 级灰度。灰度转换的公式使用 PAL 和 NTSC 标准使用的 rec601 亮度（Y）分量计算标准：</p>
+<p><span class="math display">\[
+Y = 0.299R + 0.587G + 0.114B
+\]</span></p>
+<p>这样将数字图片从一个多维度二维矩阵转换为了单维二维矩阵：</p>
+<div data-align="center">
+<p><img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/001_gray.jpeg" height="150px" alt="图片说明" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/002_gray.jpeg" height="150px" alt="图片说明" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/003_gray.jpeg" height="150px" alt="图片说明" ></p>
+</div>
+<p>对图片进行缩放和灰度化处理的作用是去除图片的细节，只保留结构、明暗、轮廓等基本信息，防止因为不同尺寸和比例带来的图片差异。</p>
+<p>注：由于哈希算法不具有旋转不变性，若物体非正向摆放，需要先识别出圆的边缘来识别出圆心，并根据识别出的特征点（绿点）位置求得夹角度数，从而将非正向摆放的标志旋转为正向，提高后续程序识别的准确性。具体操作由 实验室编译得到的 opencv.js 实现。</p>
+<p><strong>JavaScript 实现</strong></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">const</span> imagePreProcess <span class="op">=</span> <span class="kw">async</span> (imgPath) <span class="kw">=&gt;</span> {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>  <span class="kw">const</span> resizeImgPath <span class="op">=</span> <span class="cf">await</span> <span class="fu">resizeImage</span>(imgPath<span class="op">,</span> <span class="dv">8</span><span class="op">,</span> <span class="dv">8</span>)<span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>  <span class="kw">let</span> pixels <span class="op">=</span> <span class="cf">await</span> <span class="fu">retrivePixels</span>(resizeImgPath)<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>  <span class="kw">const</span> row <span class="op">=</span> pixels<span class="op">.</span><span class="at">shape</span>[<span class="dv">0</span>]<span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>  <span class="kw">const</span> col <span class="op">=</span> pixels<span class="op">.</span><span class="at">shape</span>[<span class="dv">1</span>]<span class="op">;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>  <span class="co">// console.log(row, col);</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>  <span class="co">// new array to store image info</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a>  <span class="kw">let</span> arr <span class="op">=</span> <span class="fu">create2DArray</span>(row)<span class="op">;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> row<span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;</span> col<span class="op">;</span> j<span class="op">++</span>) {</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a>      <span class="kw">const</span> r <span class="op">=</span> pixels<span class="op">.</span><span class="fu">get</span>(i<span class="op">,</span> j<span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a>      <span class="kw">const</span> g <span class="op">=</span> pixels<span class="op">.</span><span class="fu">get</span>(i<span class="op">,</span> j<span class="op">,</span> <span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a>      <span class="kw">const</span> b <span class="op">=</span> pixels<span class="op">.</span><span class="fu">get</span>(i<span class="op">,</span> j<span class="op">,</span> <span class="dv">2</span>)<span class="op">;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a>      arr[i][j] <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">round</span>(<span class="fl">0.299</span> <span class="op">*</span> r <span class="op">+</span> <span class="fl">0.578</span> <span class="op">*</span> g <span class="op">+</span> <span class="fl">0.114</span> <span class="op">*</span> b)<span class="op">;</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a>    }</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true"></a>  }</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true"></a>  <span class="co">// console.log(arr);</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true"></a>  <span class="cf">return</span> arr<span class="op">;</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
+<p>注：基于感知哈希的实现里，上述代码使用了该实现所依赖的两个库（1. 获取图片像素；2. 图片尺寸压缩），这两个库后期可考虑使用原生 JavaScript 代替，使得该实现完全由原生 JavaScript 实现。</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="er">&quot;dependencies&quot;:</span> <span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>    <span class="dt">&quot;get-pixels&quot;</span><span class="fu">:</span> <span class="st">&quot;^3.3.2&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>    <span class="dt">&quot;sharp&quot;</span><span class="fu">:</span> <span class="st">&quot;^0.25.3&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a><span class="fu">}</span></span></code></pre></div>
+<h3 id="平均哈希">平均哈希</h3>
+<ol type="1">
+<li>压缩图像为特定的尺寸 <span class="math inline">\(N * N\)</span>，<span class="math inline">\(N\)</span> 是最终生成的哈希字符串的长度。</li>
+<li>累加图像的像素的值，计算图像的平均像素值为 <span class="math inline">\(A\)</span></li>
+<li>遍历图像的每一个像素 <span class="math inline">\(P\)</span>，将像素归一化为二进制形式，获取哈希值为：</li>
+</ol>
+<p><span class="math display">\[
+h(i) = \left\{\begin{aligned}
+0, P_i &lt; A \\
+1, P_i \geqslant A
+\end{aligned}\right.
+\]</span></p>
+<p>简要的说，获取图片的平均哈希值，从每一行开始，从左到右检查像素，如果当前像素值 &gt; 平均哈希值，哈希字串加 1，否则加 0。</p>
+<p><strong>测试样例</strong></p>
+<div data-align="center">
+<p><img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/org/001.jpeg" height="150px" alt="图片说明" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/ahash.jpg" height="150px" alt="图片说明" ></p>
+</div>
+<p><strong>JavaScript 实现</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="kw">const</span> AHash <span class="op">=</span> <span class="kw">async</span> (imgPath) <span class="kw">=&gt;</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>  <span class="kw">let</span> arr <span class="op">=</span> <span class="cf">await</span> <span class="fu">convertGrayscale</span>(imgPath)<span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>  <span class="kw">let</span> average <span class="op">=</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>    sum <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>  <span class="kw">let</span> difference <span class="op">=</span> <span class="st">&quot;&quot;</span><span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> arr<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;</span> arr[<span class="dv">0</span>]<span class="op">.</span><span class="at">length</span><span class="op">;</span> j<span class="op">++</span>) {</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>      sum <span class="op">+=</span> arr[i][j]<span class="op">;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a>    }</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>  }</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a>  average <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">round</span>(sum <span class="op">/</span> (arr<span class="op">.</span><span class="at">length</span> <span class="op">*</span> arr[<span class="dv">0</span>]<span class="op">.</span><span class="at">length</span>))<span class="op">;</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> arr<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;</span> arr[<span class="dv">0</span>]<span class="op">.</span><span class="at">length</span><span class="op">;</span> j<span class="op">++</span>) {</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a>      <span class="cf">if</span> (arr[i][j] <span class="op">&gt;</span> average) {</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a>        difference <span class="op">+=</span> <span class="st">&quot;1&quot;</span><span class="op">;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a>      } <span class="cf">else</span> {</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a>        difference <span class="op">+=</span> <span class="st">&quot;0&quot;</span><span class="op">;</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a>      }</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a>    }</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true"></a>  }</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true"></a>  hexadecimal <span class="op">=</span> <span class="pp">parseInt</span>(difference<span class="op">,</span> <span class="dv">2</span>)<span class="op">.</span><span class="fu">toString</span>(<span class="dv">16</span>)<span class="op">;</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&quot;average hash = &quot;</span><span class="op">,</span> hexadecimal)<span class="op">;</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true"></a>  <span class="cf">return</span> hexadecimal<span class="op">;</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
+<h3 id="中位哈希">中位哈希</h3>
+<ol type="1">
+<li>压缩图像为特定的尺寸 <span class="math inline">\(N * N\)</span>，<span class="math inline">\(N\)</span> 是最终生成的哈希字符串的长度。</li>
+<li>遍历图像的每一个像素<span class="math inline">\(P\)</span>， 计算图像的中位像素值为 <span class="math inline">\(M=median(P_i) \qquad (i=1,2,...N^2)\)</span></li>
+<li>遍历图像的每一个像素 <span class="math inline">\(P\)</span>，将像素归一化为二进制形式，获取哈希值为：</li>
+</ol>
+<p><span class="math display">\[
+h(i) = \left\{\begin{aligned}0, P_i &lt; M \\1, P_i \geqslant M\end{aligned}\right.
+\]</span></p>
+<p>中位哈希和平均哈希很类似，只是把归一化的条件从平均值改为了中位数。</p>
+<p><strong>测试样例</strong></p>
+<div data-align="center">
+<p><img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/org/001.jpeg" height="150px" alt="图片说明" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/mhash.jpg" height="150px" alt="图片说明" ></p>
+</div>
+<p><strong>JavaScript 实现</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">const</span> MHash <span class="op">=</span> <span class="kw">async</span> (imgPath) <span class="kw">=&gt;</span> {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>  <span class="kw">let</span> arr <span class="op">=</span> <span class="cf">await</span> <span class="fu">convertGrayscale</span>(imgPath)<span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>  <span class="kw">const</span> median <span class="op">=</span> <span class="fu">getMedian</span>(arr)<span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>  <span class="kw">let</span> difference <span class="op">=</span> <span class="st">&quot;&quot;</span><span class="op">;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> arr<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;</span> arr[<span class="dv">0</span>]<span class="op">.</span><span class="at">length</span><span class="op">;</span> j<span class="op">++</span>) {</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a>      <span class="cf">if</span> (arr[i][j] <span class="op">&gt;</span> median) {</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a>        difference <span class="op">+=</span> <span class="st">&quot;1&quot;</span><span class="op">;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a>      } <span class="cf">else</span> {</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a>        difference <span class="op">+=</span> <span class="st">&quot;0&quot;</span><span class="op">;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a>      }</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true"></a>    }</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true"></a>  }</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true"></a>  hexadecimal <span class="op">=</span> <span class="pp">parseInt</span>(difference<span class="op">,</span> <span class="dv">2</span>)<span class="op">.</span><span class="fu">toString</span>(<span class="dv">16</span>)<span class="op">;</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&quot;median hash = &quot;</span><span class="op">,</span> hexadecimal)<span class="op">;</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true"></a>  <span class="cf">return</span> hexadecimal<span class="op">;</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
+<h3 id="差异哈希">差异哈希</h3>
+<ol type="1">
+<li>压缩图像为特定的尺寸 <span class="math inline">\(N * N\)</span>，<span class="math inline">\(N\)</span> 是最终生成的哈希字符串的长度。</li>
+<li>遍历图像的每一个像素 <span class="math inline">\(P\)</span>，将像素归一化为二进制形式，获取哈希值为：</li>
+</ol>
+<p><span class="math display">\[
+h(i) = \left\{\begin{aligned}
+0, P_i &lt; P_{i+1} \\
+1, P_i \geqslant P_{i+1}
+\end{aligned}\right.
+\]</span></p>
+<p>简要的说，获取图片的差异哈希值，从每一行开始，从左到右检查像素，如果左像素值 &gt; 右像素值（若左像素为行末则与下一行的起始像素比较），哈希字串加 1，否则加 0。</p>
+<p><strong>测试样例</strong></p>
+<div data-align="center">
+<p><img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/org/001.jpeg" height="150px" alt="图片说明" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/dhash.jpg" height="150px" alt="图片说明" ></p>
+</div>
+<p><strong>JavaScript 实现</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">const</span> DHash <span class="op">=</span> <span class="kw">async</span> (imgPath) <span class="kw">=&gt;</span> {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>  <span class="kw">let</span> arr <span class="op">=</span> <span class="cf">await</span> <span class="fu">convertGrayscale</span>(imgPath)<span class="op">;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>  <span class="kw">let</span> difference <span class="op">=</span> <span class="st">&quot;&quot;</span><span class="op">;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> arr<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="kw">let</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> j <span class="op">&lt;</span> arr[<span class="dv">0</span>]<span class="op">.</span><span class="at">length</span><span class="op">;</span> j<span class="op">++</span>) {</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>      <span class="cf">if</span> (arr[i][j] <span class="op">&gt;</span> arr[i][j <span class="op">+</span> <span class="dv">1</span>]) {</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>        difference <span class="op">+=</span> <span class="st">&quot;1&quot;</span><span class="op">;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>      } <span class="cf">else</span> {</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>        difference <span class="op">+=</span> <span class="st">&quot;0&quot;</span><span class="op">;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>      }</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>    }</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a>  }</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a>  hexadecimal <span class="op">=</span> <span class="pp">parseInt</span>(difference<span class="op">,</span> <span class="dv">2</span>)<span class="op">.</span><span class="fu">toString</span>(<span class="dv">16</span>)<span class="op">;</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&quot;difference hash = &quot;</span><span class="op">,</span> hexadecimal)<span class="op">;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a>  <span class="cf">return</span> hexadecimal<span class="op">;</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
+<h3 id="块哈希">块哈希</h3>
+<ol type="1">
+<li>将规格化后的图像分为非重叠的块 <span class="math inline">\(I_1, I_2, ..., I_N\)</span>，<span class="math inline">\(N\)</span> 是最终生成的哈希字符串的长度。</li>
+<li>从相应的块序列 <span class="math inline">\(I_1,I_2,...,I_N\)</span> 计算平均值序列 <span class="math inline">\(M_1,M_2,...M_N\)</span>，并得到此序列的中位数为：</li>
+</ol>
+<p><span class="math display">\[
+M_d =  median(M_i)\qquad(i=1,2,...N)
+\]</span></p>
+<ol start="3" type="1">
+<li>将平均值序列归一化为二进制形式，并获得哈希值 h 为：</li>
+</ol>
+<p><span class="math display">\[
+h(i) = \left\{\begin{aligned}
+0, M_i &lt; M_d \\
+1, M_i \geqslant M_d
+\end{aligned}\right.
+\]</span></p>
+<p>简要的说，块哈希算法将图像划分为多个块，如果块内的均值大于等于中位数, 输出 1，小于则输出 0，这样为每个块生成一个值 1 或 0，这些值从左到右依次组合成一个哈希。</p>
+<p><strong>测试样例</strong></p>
+<div data-align="center">
+<p><img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/org/001.jpeg" height="150px" alt="原始图像" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/bhash.jpg" height="150px" alt="哈希结果" ></p>
+</div>
+<p><strong>JavaScript 实现</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">const</span> BHash <span class="op">=</span> <span class="kw">async</span> (imgPath<span class="op">,</span> bits <span class="op">=</span> <span class="dv">8</span>) <span class="kw">=&gt;</span> {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>  <span class="kw">let</span> pixels <span class="op">=</span> <span class="cf">await</span> <span class="fu">retrivePixels</span>(imgPath)<span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>  <span class="kw">const</span> width <span class="op">=</span> pixels<span class="op">.</span><span class="at">shape</span>[<span class="dv">0</span>]<span class="op">;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>  <span class="kw">const</span> height <span class="op">=</span> pixels<span class="op">.</span><span class="at">shape</span>[<span class="dv">1</span>]<span class="op">;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>  blocksizeX <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">ceil</span>(width <span class="op">/</span> bits)<span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>  blockSizeY <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">ceil</span>(height <span class="op">/</span> bits)<span class="op">;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>  result <span class="op">=</span> []<span class="op">;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">let</span> y <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> y <span class="op">&lt;</span> bits<span class="op">;</span> y<span class="op">++</span>) {</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="kw">let</span> x <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> x <span class="op">&lt;</span> bits<span class="op">;</span> x<span class="op">++</span>) {</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a>      value <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>      <span class="cf">for</span> (<span class="kw">let</span> iy <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> iy <span class="op">&lt;</span> blockSizeY<span class="op">;</span> iy<span class="op">++</span>) {</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a>        <span class="cf">for</span> (<span class="kw">let</span> ix <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> ix <span class="op">&lt;</span> blocksizeX<span class="op">;</span> ix<span class="op">++</span>) {</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a>          <span class="kw">const</span> cx <span class="op">=</span> x <span class="op">*</span> blocksizeX <span class="op">+</span> ix<span class="op">;</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a>          <span class="kw">const</span> cy <span class="op">=</span> y <span class="op">*</span> blockSizeY <span class="op">+</span> iy<span class="op">;</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a>          value <span class="op">+=</span> <span class="fu">totalValueRGB</span>(pixels<span class="op">,</span> cx<span class="op">,</span> cy)<span class="op">;</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true"></a>        }</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true"></a>      }</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true"></a>      result<span class="op">.</span><span class="fu">push</span>(value)<span class="op">;</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true"></a>    }</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true"></a>  }</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true"></a>  <span class="kw">const</span> blocksArr <span class="op">=</span> <span class="fu">blocksToBits</span>(result<span class="op">,</span> blockSizeY <span class="op">*</span> blocksizeX)<span class="op">;</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true"></a>  <span class="cf">return</span> <span class="fu">bitsToHexHash</span>(blocksArr)<span class="op">;</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
+<h3 id="汉明距离">汉明距离</h3>
+<p>在信息论中，两个等长字符串之间的汉明距离（Hamming distance）是两个字符串对应位置的不同字符的个数，即将一个字符串变换成另外一个字符串所需要替换的字符个数。 哈希字符串以 16 进制表示，因此在计算两个哈希字符串的距离时只需将其转换为 2 进制后进行异或运算即能得到汉明距离。</p>
+<p><strong>Javascript 实现</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">const</span> hammingDistance <span class="op">=</span> (hash1<span class="op">,</span> hash2) <span class="kw">=&gt;</span> {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>  <span class="kw">const</span> difference <span class="op">=</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>    <span class="pp">parseInt</span>(hash1<span class="op">,</span> <span class="dv">16</span>)<span class="op">.</span><span class="fu">toString</span>(<span class="dv">10</span>) <span class="op">^</span> <span class="pp">parseInt</span>(hash2<span class="op">,</span> <span class="dv">16</span>)<span class="op">.</span><span class="fu">toString</span>(<span class="dv">10</span>)<span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>  binary <span class="op">=</span> <span class="pp">parseInt</span>(difference<span class="op">,</span> <span class="dv">10</span>)<span class="op">.</span><span class="fu">toString</span>(<span class="dv">2</span>)<span class="op">;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>  distance <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> binary<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a>    <span class="cf">if</span> (binary[i] <span class="op">==</span> <span class="st">&quot;1&quot;</span>) {</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true"></a>      distance <span class="op">+=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true"></a>    }</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true"></a>  }</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true"></a>  <span class="cf">return</span> distance<span class="op">;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
+<h3 id="分类测试">分类测试</h3>
+<p>左图为示例输入，右三图为模版：</p>
+<div data-align="center">
+<p><img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/org/out.jpg" height="150px" alt="图片说明" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/org/001.jpeg" height="150px" alt="图片说明" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/org/002.jpeg" height="150px" alt="图片说明" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/org/003.jpeg" height="150px" alt="图片说明" ></p>
+</div>
+<p>对输入图像与模版分别求汉明距离，结果为：</p>
+<table>
+<thead>
+<tr class="header">
+<th>类别</th>
+<th>模版 1(机动车道)</th>
+<th>模版 2(左转)</th>
+<th>模版 3(禁止临时停放)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>平均哈希</td>
+<td>10</td>
+<td>8</td>
+<td>4</td>
+</tr>
+<tr class="even">
+<td>中位哈希</td>
+<td>10</td>
+<td>7</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>差异哈希</td>
+<td>7</td>
+<td>9</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>块哈希</td>
+<td>5</td>
+<td>6</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>定义阈值 &lt;5 即为非常相似，故模版 3 匹配，输入图像分类为模版三的类别。</p>
+<h3 id="稳健性测试">稳健性测试</h3>
+<p>在原图发生特定变换后是否仍能够保留其特征是衡量算法稳健性的重要标准。用于测试的图像变换方法包括：</p>
+<ul>
+<li>高斯模糊</li>
+<li>灰度化</li>
+<li>增加亮度，降低亮度</li>
+<li>增加对比度，降低对比度</li>
+</ul>
+<p>示例变换，从左到右的图像分别为：原图，高斯模糊，增加亮度，降低亮度，增加对比度，降低对比度，灰度化。</p>
+<div data-align="center">
+<p><img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/transfer/723.jpeg" height="120px" alt="原始图像" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/transfer/smooth.jpeg" height="120px" alt="高斯模糊" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/transfer/add_brightness.jpeg" height="120px" alt="增加亮度" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/transfer/decrease_brightness.jpeg" height="120px" alt="降低亮度" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/transfer/add_contrast.jpeg" height="120px" alt="增加对比度" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/transfer/decrease_contrast.jpeg" height="120px" alt="降低对比度" > <img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/transfer/gray.jpeg" height="120px" alt="灰度化" ></p>
+</div>
+<p>使用 Python 的 Pillow, OpenCV, skimage 库，对 100 张 COCO 通用数据集中的图像进行上述变换：</p>
+<figure>
+<img src="https://raw.githubusercontent.com/AbyssLink/pic/master/custom/tmp/diff-image-dataset.jpg" alt="Xnip2020-06-08_20-45-12" /><figcaption aria-hidden="true">Xnip2020-06-08_20-45-12</figcaption>
+</figure>
+<p>针对以上哈希算法，计算与原图的相似度，对汉明距离求和的结果为下：</p>
+<table>
+<thead>
+<tr class="header">
+<th>变换类型</th>
+<th>平均哈希(bit)</th>
+<th>中位哈希(bit)</th>
+<th>差异哈希(bit)</th>
+<th>块哈希(bit)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>高斯模糊</td>
+<td>96</td>
+<td>237</td>
+<td>152</td>
+<td>35</td>
+</tr>
+<tr class="even">
+<td>增加亮度</td>
+<td>421</td>
+<td>878</td>
+<td>622</td>
+<td>541</td>
+</tr>
+<tr class="odd">
+<td>降低亮度</td>
+<td>257</td>
+<td>628</td>
+<td>387</td>
+<td>374</td>
+</tr>
+<tr class="even">
+<td>增加对比度</td>
+<td>190</td>
+<td>597</td>
+<td>409</td>
+<td>272</td>
+</tr>
+<tr class="odd">
+<td>降低对比度</td>
+<td>346</td>
+<td>713</td>
+<td>620</td>
+<td>378</td>
+</tr>
+<tr class="even">
+<td>灰度化</td>
+<td>89</td>
+<td>226</td>
+<td>93</td>
+<td>141</td>
+</tr>
+<tr class="odd">
+<td>总和</td>
+<td>1399</td>
+<td>3279</td>
+<td>2283</td>
+<td>1741</td>
+</tr>
+<tr class="even">
+<td>总和(百分比)</td>
+<td>3.64%</td>
+<td>8.54%</td>
+<td>5.94%</td>
+<td>4.53%</td>
+</tr>
+</tbody>
+</table>
+<p>总结：</p>
+<p>平均哈希在各种变换类型下的综合表现下很好，而中位哈希的表现相对误差较大。在上述算法中，块哈希在实际系统运行时表现最佳。</p>
+<h3 id="速度测试">速度测试</h3>
+<p>针对以上哈希算法，对 100 张 COCO 通用数据集中的图像测试的结果：</p>
+<table>
+<thead>
+<tr class="header">
+<th>变换类型</th>
+<th>平均哈希(ms)</th>
+<th>中位哈希(ms)</th>
+<th>差异哈希(ms)</th>
+<th>块哈希(ms)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>高斯模糊</td>
+<td>2017</td>
+<td>2037</td>
+<td>2037</td>
+<td>7800</td>
+</tr>
+<tr class="even">
+<td>增加亮度</td>
+<td>2068</td>
+<td>1868</td>
+<td>1934</td>
+<td>9506</td>
+</tr>
+<tr class="odd">
+<td>降低亮度</td>
+<td>1920</td>
+<td>1945</td>
+<td>2044</td>
+<td>9115</td>
+</tr>
+<tr class="even">
+<td>增加对比度</td>
+<td>1834</td>
+<td>1912</td>
+<td>1885</td>
+<td>8617</td>
+</tr>
+<tr class="odd">
+<td>降低对比度</td>
+<td>1887</td>
+<td>1850</td>
+<td>1933</td>
+<td>7445</td>
+</tr>
+<tr class="even">
+<td>灰度化</td>
+<td>1925</td>
+<td>2072</td>
+<td>1949</td>
+<td>8197</td>
+</tr>
+<tr class="odd">
+<td>总和</td>
+<td>11651</td>
+<td>11684</td>
+<td>11782</td>
+<td>50680</td>
+</tr>
+<tr class="even">
+<td>总和(秒)</td>
+<td>11.7</td>
+<td>11.7</td>
+<td>11.8</td>
+<td>50.7</td>
+</tr>
+</tbody>
+</table>
+<p>总结：</p>
+<p>平均哈希、中位哈希和差异哈希的速度表现近似，而块哈希的运行速度相对明显较慢，可能的原因是为保证块大小和哈希字符串的拓展，计算哈希值前的图片缩放比例不足，造成相对其他的哈希方法计算量较大。计算识别时间的均值，在上位机上每一张图片的识别时间约在 0.11 ~ 0.51 秒。</p>
+<h2 id="基于颜色直方图">基于颜色直方图</h2>
+<p>在图像处理和摄影中，颜色直方图（color histogram）表示图像中颜色的分布。 对于数字图像，颜色直方图表示在固定的颜色范围列表中每个颜色范围内具有颜色的像素数量，这些颜色范围跨越图像的颜色空间，即所有可能颜色的集合。</p>
+<h3 id="提取图片特征值">提取图片特征值</h3>
+<ol type="1">
+<li>对颜色区间进行简化，将像素值 <span class="math inline">\(v\)</span> 分成四个区：</li>
+</ol>
+<table>
+<thead>
+<tr class="header">
+<th>area 1</th>
+<th>area 2</th>
+<th>area 3</th>
+<th>area 4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(0\leq v \leq 63\)</span></td>
+<td><span class="math inline">\(64 \leq v \leq 127\)</span></td>
+<td><span class="math inline">\(128 \leq v \leq 191\)</span></td>
+<td><span class="math inline">\(192 \leq v \leq 255\)</span></td>
+</tr>
+</tbody>
+</table>
+<ol start="2" type="1">
+<li>红绿蓝三色共有 4 个区，形成 64 种组合， 统计每一种中包含的像素数量：</li>
+</ol>
+<table>
+<thead>
+<tr class="header">
+<th>R</th>
+<th>G</th>
+<th>B</th>
+<th>Pixel quantity</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>32744</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>349</td>
+</tr>
+<tr class="odd">
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>14</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>234</td>
+</tr>
+<tr class="odd">
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>365</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td>1</td>
+<td>3</td>
+<td>184657</td>
+</tr>
+<tr class="odd">
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>0</td>
+<td>2</td>
+<td>2</td>
+<td>17</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td>2</td>
+<td>3</td>
+<td>663</td>
+</tr>
+<tr class="odd">
+<td>0</td>
+<td>3</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>0</td>
+<td>3</td>
+<td>2</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td>3</td>
+<td>3</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>16078</td>
+</tr>
+<tr class="even">
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>1810</td>
+</tr>
+</tbody>
+</table>
+<ol start="3" type="1">
+<li><p>将表中最后一栏的像素数量提取出来，形成一个 64 维向量，以该向量作为该图片的特征值。</p>
+<p>如：<span class="math inline">\(vector = (32744, 349, 14, 0, 2, ...1810)\)</span></p></li>
+</ol>
+<p><strong>Javascript 实现</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="co">/**</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a><span class="co"> * convert image to a 64-dimensional vector</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a><span class="co"> * 将图像转换为 64 维向量</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a><span class="co"> *</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">{string}</span><span class="co"> imgPath</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a><span class="co"> * </span><span class="an">@returns</span><span class="co"> {object}</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a><span class="co"> */</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a><span class="kw">const</span> colorVector <span class="op">=</span> <span class="kw">async</span> (imgPath) <span class="kw">=&gt;</span> {</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a>  <span class="kw">let</span> pixels <span class="op">=</span> <span class="cf">await</span> <span class="fu">retrivePixels</span>(imgPath)<span class="op">;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true"></a>  <span class="kw">const</span> width <span class="op">=</span> pixels<span class="op">.</span><span class="at">shape</span>[<span class="dv">0</span>]<span class="op">;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true"></a>  <span class="kw">const</span> height <span class="op">=</span> pixels<span class="op">.</span><span class="at">shape</span>[<span class="dv">1</span>]<span class="op">;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true"></a>  <span class="kw">let</span> vectors <span class="op">=</span> <span class="bu">Array</span>(<span class="dv">64</span>)<span class="op">.</span><span class="fu">fill</span>(<span class="dv">0</span>)<span class="op">;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">let</span> x <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> x <span class="op">&lt;</span> width<span class="op">;</span> x<span class="op">++</span>) {</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="kw">let</span> y <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> y <span class="op">&lt;</span> height<span class="op">;</span> y<span class="op">++</span>) {</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true"></a>      <span class="kw">const</span> r <span class="op">=</span> <span class="fu">getPartition</span>(pixels<span class="op">.</span><span class="fu">get</span>(x<span class="op">,</span> y<span class="op">,</span> <span class="dv">0</span>))<span class="op">;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true"></a>      <span class="kw">const</span> g <span class="op">=</span> <span class="fu">getPartition</span>(pixels<span class="op">.</span><span class="fu">get</span>(x<span class="op">,</span> y<span class="op">,</span> <span class="dv">1</span>))<span class="op">;</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true"></a>      <span class="kw">const</span> b <span class="op">=</span> <span class="fu">getPartition</span>(pixels<span class="op">.</span><span class="fu">get</span>(x<span class="op">,</span> y<span class="op">,</span> <span class="dv">2</span>))<span class="op">;</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true"></a>      <span class="kw">const</span> index <span class="op">=</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true"></a>        r <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">pow</span>(<span class="dv">4</span><span class="op">,</span> <span class="dv">2</span>) <span class="op">+</span> g <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">pow</span>(<span class="dv">4</span><span class="op">,</span> <span class="dv">1</span>) <span class="op">+</span> b <span class="op">*</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">pow</span>(<span class="dv">4</span><span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true"></a>      vectors[index] <span class="op">+=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true"></a>    }</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true"></a>  }</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true"></a>  <span class="cf">return</span> vectors<span class="op">;</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
+<h3 id="计算图片相似度">计算图片相似度</h3>
+<p>提取图片的特征值后，求图片间的相似度即转换为求图片的两个特征向量 <span class="math inline">\(A\)</span>，<span class="math inline">\(B\)</span> 之间的相似度。 使用欧几里得点积公式推导：</p>
+<p><span class="math display">\[
+similarity = cos(\theta) = \frac{A \cdot B}{\|A \| \|B \|} = \frac{\sum_{i=1}^n A_i \times B_i}{\sqrt{\sum_{i=1}^n (A_i)^2} \times \sqrt{\sum_{i=1}^n (B_i)^2}}
+\]</span></p>
+<p><strong>Javascript 实现</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="co">/**</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a><span class="co"> * calculate the cosine similiarity of two images based on color histogram</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a><span class="co"> * 基于颜色直方图计算两个图像的余弦相似度</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a><span class="co"> *</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">{string}</span><span class="co"> firstImg</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">{string}</span><span class="co"> secondImg</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a><span class="co"> * </span><span class="an">@returns</span><span class="co"> {number}</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true"></a><span class="co"> */</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true"></a><span class="kw">const</span> colorSimiliarity <span class="op">=</span> <span class="kw">async</span> (firstImg<span class="op">,</span> secondImg) <span class="kw">=&gt;</span> {</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true"></a>  <span class="kw">let</span> vector1 <span class="op">=</span> <span class="cf">await</span> <span class="fu">colorVector</span>(firstImg)<span class="op">;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true"></a>  <span class="kw">let</span> vector2 <span class="op">=</span> <span class="cf">await</span> <span class="fu">colorVector</span>(secondImg)<span class="op">;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true"></a>  <span class="co">// calculate cosine similiarity of two vectors</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true"></a>  <span class="kw">let</span> dividend <span class="op">=</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true"></a>    divisor <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> vector1<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true"></a>    dividend <span class="op">+=</span> vector1[i] <span class="op">*</span> vector2[i]<span class="op">;</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true"></a>  }</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true"></a>  <span class="kw">let</span> absVector1 <span class="op">=</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true"></a>    absVector2 <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> vector1<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true"></a>    absVector1 <span class="op">+=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">pow</span>(vector1[i]<span class="op">,</span> <span class="dv">2</span>)<span class="op">;</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true"></a>    absVector2 <span class="op">+=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">pow</span>(vector2[i]<span class="op">,</span> <span class="dv">2</span>)<span class="op">;</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true"></a>  }</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true"></a>  absVector1 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">pow</span>(absVector1<span class="op">,</span> <span class="fl">0.5</span>)<span class="op">;</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true"></a>  absVector2 <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">pow</span>(absVector2<span class="op">,</span> <span class="fl">0.5</span>)<span class="op">;</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true"></a>  divisor <span class="op">=</span> absVector1 <span class="op">*</span> absVector2<span class="op">;</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true"></a>  similarity <span class="op">=</span> dividend <span class="op">/</span> divisor<span class="op">;</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true"></a>  <span class="cf">return</span> similarity<span class="op">;</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
+<h2 id="基于神经网络">基于神经网络</h2>
+<p>基于 TensorFlow.js，使用卷积神经网络（CNN）进行分类。主要流程如下：</p>
+<ol type="1">
+<li>进行图像预处理，由于 CNN 不具有旋转不变性需要将非正向的图像转为正向。</li>
+<li>建立待训练的模型（CNN）</li>
+<li>卷积（Convolution）向图像应用滤波器（Kernel），通过在原始图像上平移来提取特征。</li>
+<li>池化（pooling）对图片进行压缩（降采样）。</li>
+<li>按照定义的 CNN 结构重复 1 和 2 步骤，通过中的各个卷积层和池化层。</li>
+<li>卷积和池化提取出了图像的特征，最后通过全连接（FC, Full Connection）作为分类器输出分类结果。</li>
+</ol>
+<h3 id="模型定义">模型定义</h3>
+<p>构建神经网络，机器学习模型接受输入，然后产生输出。具体操作的含义已在代码注释中阐明。</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="kw">function</span> <span class="fu">getModel</span>() {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>  <span class="kw">const</span> model <span class="op">=</span> tf<span class="op">.</span><span class="fu">sequential</span>()<span class="op">;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a>  <span class="co">// 图像参数定义</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a>  <span class="kw">const</span> IMAGE_WIDTH <span class="op">=</span> <span class="dv">28</span><span class="op">;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true"></a>  <span class="kw">const</span> IMAGE_HEIGHT <span class="op">=</span> <span class="dv">28</span><span class="op">;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true"></a>  <span class="kw">const</span> IMAGE_CHANNELS <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true"></a>  <span class="co">// 在卷积神经网络的第一层必须指定输入形状</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true"></a>  <span class="co">// 然后在该层中进行的卷积操作指定一些参数</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true"></a>  model<span class="op">.</span><span class="fu">add</span>(</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true"></a>    tf<span class="op">.</span><span class="at">layers</span><span class="op">.</span><span class="fu">conv2d</span>({</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true"></a>      <span class="dt">inputShape</span><span class="op">:</span> [IMAGE_WIDTH<span class="op">,</span> IMAGE_HEIGHT<span class="op">,</span> IMAGE_CHANNELS]<span class="op">,</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true"></a>      <span class="dt">kernelSize</span><span class="op">:</span> <span class="dv">5</span><span class="op">,</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true"></a>      <span class="dt">filters</span><span class="op">:</span> <span class="dv">8</span><span class="op">,</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true"></a>      <span class="dt">strides</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true"></a>      <span class="dt">activation</span><span class="op">:</span> <span class="st">&quot;relu&quot;</span><span class="op">,</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true"></a>      <span class="dt">kernelInitializer</span><span class="op">:</span> <span class="st">&quot;varianceScaling&quot;</span><span class="op">,</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true"></a>    })</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true"></a>  )<span class="op">;</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true"></a></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true"></a>  <span class="co">// MaxPooling 层充当一种下采样，使用区域中的最大值而不是取平均值。</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true"></a>  model<span class="op">.</span><span class="fu">add</span>(tf<span class="op">.</span><span class="at">layers</span><span class="op">.</span><span class="fu">maxPooling2d</span>({ <span class="dt">poolSize</span><span class="op">:</span> [<span class="dv">2</span><span class="op">,</span> <span class="dv">2</span>]<span class="op">,</span> <span class="dt">strides</span><span class="op">:</span> [<span class="dv">2</span><span class="op">,</span> <span class="dv">2</span>] }))<span class="op">;</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true"></a></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true"></a>  <span class="co">// 重复另一个 conv2d + maxPooling 操作</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true"></a>  model<span class="op">.</span><span class="fu">add</span>(</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true"></a>    tf<span class="op">.</span><span class="at">layers</span><span class="op">.</span><span class="fu">conv2d</span>({</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true"></a>      <span class="dt">kernelSize</span><span class="op">:</span> <span class="dv">5</span><span class="op">,</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true"></a>      <span class="dt">filters</span><span class="op">:</span> <span class="dv">16</span><span class="op">,</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true"></a>      <span class="dt">strides</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true"></a>      <span class="dt">activation</span><span class="op">:</span> <span class="st">&quot;relu&quot;</span><span class="op">,</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true"></a>      <span class="dt">kernelInitializer</span><span class="op">:</span> <span class="st">&quot;varianceScaling&quot;</span><span class="op">,</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true"></a>    })</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true"></a>  )<span class="op">;</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true"></a>  model<span class="op">.</span><span class="fu">add</span>(tf<span class="op">.</span><span class="at">layers</span><span class="op">.</span><span class="fu">maxPooling2d</span>({ <span class="dt">poolSize</span><span class="op">:</span> [<span class="dv">2</span><span class="op">,</span> <span class="dv">2</span>]<span class="op">,</span> <span class="dt">strides</span><span class="op">:</span> [<span class="dv">2</span><span class="op">,</span> <span class="dv">2</span>] }))<span class="op">;</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true"></a></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true"></a>  <span class="co">// 将2D滤波器的输出展平为1D向量，以准备将其输入到最后一层（为分类层做准备）</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true"></a>  model<span class="op">.</span><span class="fu">add</span>(tf<span class="op">.</span><span class="at">layers</span><span class="op">.</span><span class="fu">flatten</span>())<span class="op">;</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true"></a></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true"></a>  <span class="co">// 我们的最后一层是一个密集层，其中包含10个输出单元，</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true"></a>  <span class="co">// 每个输出类别一个单元（即0, 1, 2, 3, 4, 5, 6, 7, 8, 9）</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true"></a>  <span class="kw">const</span> NUM_OUTPUT_CLASSES <span class="op">=</span> <span class="dv">10</span><span class="op">;</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true"></a>  model<span class="op">.</span><span class="fu">add</span>(</span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true"></a>    tf<span class="op">.</span><span class="at">layers</span><span class="op">.</span><span class="fu">dense</span>({</span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true"></a>      <span class="dt">units</span><span class="op">:</span> NUM_OUTPUT_CLASSES<span class="op">,</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true"></a>      <span class="dt">kernelInitializer</span><span class="op">:</span> <span class="st">&quot;varianceScaling&quot;</span><span class="op">,</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true"></a>      <span class="dt">activation</span><span class="op">:</span> <span class="st">&quot;softmax&quot;</span><span class="op">,</span></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true"></a>    })</span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true"></a>  )<span class="op">;</span></span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true"></a></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true"></a>  <span class="co">// 选择一个优化器，损失函数和精度度量，然后编译并返回模型</span></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true"></a>  <span class="kw">const</span> optimizer <span class="op">=</span> tf<span class="op">.</span><span class="at">train</span><span class="op">.</span><span class="fu">adam</span>()<span class="op">;</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true"></a>  model<span class="op">.</span><span class="fu">compile</span>({</span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true"></a>    <span class="dt">optimizer</span><span class="op">:</span> optimizer<span class="op">,</span></span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true"></a>    <span class="dt">loss</span><span class="op">:</span> <span class="st">&quot;categoricalCrossentropy&quot;</span><span class="op">,</span></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true"></a>    <span class="dt">metrics</span><span class="op">:</span> [<span class="st">&quot;accuracy&quot;</span>]<span class="op">,</span></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true"></a>  })<span class="op">;</span></span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true"></a></span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true"></a>  <span class="cf">return</span> model<span class="op">;</span></span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true"></a>}</span></code></pre></div>
+<h3 id="训练模型">训练模型</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">train</span>(model<span class="op">,</span> data) {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a>  <span class="kw">const</span> metrics <span class="op">=</span> [<span class="st">&quot;loss&quot;</span><span class="op">,</span> <span class="st">&quot;val_loss&quot;</span><span class="op">,</span> <span class="st">&quot;acc&quot;</span><span class="op">,</span> <span class="st">&quot;val_acc&quot;</span>]<span class="op">;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a>  <span class="kw">const</span> container <span class="op">=</span> {</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a>    <span class="dt">name</span><span class="op">:</span> <span class="st">&quot;Model Training&quot;</span><span class="op">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a>    <span class="dt">styles</span><span class="op">:</span> { <span class="dt">height</span><span class="op">:</span> <span class="st">&quot;1000px&quot;</span> }<span class="op">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a>  }<span class="op">;</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true"></a>  <span class="kw">const</span> fitCallbacks <span class="op">=</span> tfvis<span class="op">.</span><span class="at">show</span><span class="op">.</span><span class="fu">fitCallbacks</span>(container<span class="op">,</span> metrics)<span class="op">;</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true"></a>  <span class="kw">const</span> BATCH_SIZE <span class="op">=</span> <span class="dv">512</span><span class="op">;</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true"></a>  <span class="kw">const</span> TRAIN_DATA_SIZE <span class="op">=</span> <span class="dv">5500</span><span class="op">;</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true"></a>  <span class="kw">const</span> TEST_DATA_SIZE <span class="op">=</span> <span class="dv">1000</span><span class="op">;</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true"></a>  <span class="kw">const</span> [trainXs<span class="op">,</span> trainYs] <span class="op">=</span> tf<span class="op">.</span><span class="fu">tidy</span>(() <span class="kw">=&gt;</span> {</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true"></a>    <span class="kw">const</span> d <span class="op">=</span> data<span class="op">.</span><span class="fu">nextTrainBatch</span>(TRAIN_DATA_SIZE)<span class="op">;</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true"></a>    <span class="cf">return</span> [d<span class="op">.</span><span class="at">xs</span><span class="op">.</span><span class="fu">reshape</span>([TRAIN_DATA_SIZE<span class="op">,</span> <span class="dv">28</span><span class="op">,</span> <span class="dv">28</span><span class="op">,</span> <span class="dv">1</span>])<span class="op">,</span> d<span class="op">.</span><span class="at">labels</span>]<span class="op">;</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true"></a>  })<span class="op">;</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true"></a>  <span class="kw">const</span> [testXs<span class="op">,</span> testYs] <span class="op">=</span> tf<span class="op">.</span><span class="fu">tidy</span>(() <span class="kw">=&gt;</span> {</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true"></a>    <span class="kw">const</span> d <span class="op">=</span> data<span class="op">.</span><span class="fu">nextTestBatch</span>(TEST_DATA_SIZE)<span class="op">;</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true"></a>    <span class="cf">return</span> [d<span class="op">.</span><span class="at">xs</span><span class="op">.</span><span class="fu">reshape</span>([TEST_DATA_SIZE<span class="op">,</span> <span class="dv">28</span><span class="op">,</span> <span class="dv">28</span><span class="op">,</span> <span class="dv">1</span>])<span class="op">,</span> d<span class="op">.</span><span class="at">labels</span>]<span class="op">;</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true"></a>  })<span class="op">;</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true"></a></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true"></a>  <span class="cf">return</span> model<span class="op">.</span><span class="fu">fit</span>(trainXs<span class="op">,</span> trainYs<span class="op">,</span> {</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true"></a>    <span class="dt">batchSize</span><span class="op">:</span> BATCH_SIZE<span class="op">,</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true"></a>    <span class="dt">validationData</span><span class="op">:</span> [testXs<span class="op">,</span> testYs]<span class="op">,</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true"></a>    <span class="dt">epochs</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true"></a>    <span class="dt">shuffle</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true"></a>    <span class="dt">callbacks</span><span class="op">:</span> fitCallbacks<span class="op">,</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true"></a>  })<span class="op">;</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true"></a>}</span></code></pre></div>
+<h3 id="测试模型">测试模型</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="kw">const</span> classNames <span class="op">=</span> [</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a>  <span class="st">&quot;Zero&quot;</span><span class="op">,</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a>  <span class="st">&quot;One&quot;</span><span class="op">,</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a>  <span class="st">&quot;Two&quot;</span><span class="op">,</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a>  <span class="st">&quot;Three&quot;</span><span class="op">,</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a>  <span class="st">&quot;Four&quot;</span><span class="op">,</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a>  <span class="st">&quot;Five&quot;</span><span class="op">,</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true"></a>  <span class="st">&quot;Six&quot;</span><span class="op">,</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true"></a>  <span class="st">&quot;Seven&quot;</span><span class="op">,</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true"></a>  <span class="st">&quot;Eight&quot;</span><span class="op">,</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true"></a>  <span class="st">&quot;Nine&quot;</span><span class="op">,</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true"></a>]<span class="op">;</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true"></a><span class="kw">function</span> <span class="fu">doPrediction</span>(model<span class="op">,</span> data<span class="op">,</span> testDataSize <span class="op">=</span> <span class="dv">500</span>) {</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true"></a>  <span class="kw">const</span> IMAGE_WIDTH <span class="op">=</span> <span class="dv">28</span><span class="op">;</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true"></a>  <span class="kw">const</span> IMAGE_HEIGHT <span class="op">=</span> <span class="dv">28</span><span class="op">;</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true"></a>  <span class="kw">const</span> testData <span class="op">=</span> data<span class="op">.</span><span class="fu">nextTestBatch</span>(testDataSize)<span class="op">;</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true"></a>  <span class="kw">const</span> testxs <span class="op">=</span> testData<span class="op">.</span><span class="at">xs</span><span class="op">.</span><span class="fu">reshape</span>([</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true"></a>    testDataSize<span class="op">,</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true"></a>    IMAGE_WIDTH<span class="op">,</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true"></a>    IMAGE_HEIGHT<span class="op">,</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true"></a>    <span class="dv">1</span><span class="op">,</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true"></a>  ])<span class="op">;</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true"></a>  <span class="kw">const</span> labels <span class="op">=</span> testData<span class="op">.</span><span class="at">labels</span><span class="op">.</span><span class="fu">argMax</span>(<span class="op">-</span><span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true"></a>  <span class="kw">const</span> preds <span class="op">=</span> model<span class="op">.</span><span class="fu">predict</span>(testxs)<span class="op">.</span><span class="fu">argMax</span>(<span class="op">-</span><span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true"></a></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true"></a>  testxs<span class="op">.</span><span class="fu">dispose</span>()<span class="op">;</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true"></a>  <span class="cf">return</span> [preds<span class="op">,</span> labels]<span class="op">;</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true"></a>}</span></code></pre></div>
+<h3 id="结果示例">结果示例</h3>
+<div data-align="center">
+<p><img src="https://github.com/AbyssLink/pic/blob/master/custom/2018-12-18_02-56.png?raw=true" width="150px" alt="1" > <img src="https://github.com/AbyssLink/pic/blob/master/custom/2018-12-18_12-57.png?raw=true" width="150px" alt="2" ></p>
+</div>
+<h3 id="将视频转换为图片数据集">将视频转换为图片数据集</h3>
+<p>使用 ffmpeg 将视频转换为一组图片，选取图片相似度比较算法，定义特定阈值过滤掉非常相似的图像（如相邻帧非常接近的两张图像）。得到的拆分图像可作为数据集供 CNN 训练。</p>
+<h2 id="基于-node-red-开发自定义节点">基于 Node-RED 开发自定义节点</h2>
+<p>Node-RED 具有良好的拓展性，其内建的底层控制流暴露出了较丰富的 API 供开发者创建自定义节点。节点在部署流时创建，它们可以在流运行时发送和接收一些消息，而在部署下一个流时将删除它们，按照新的节点定义重新创建。阅读 Node-RED 的文档会发现，Node-RED 的自定义节点的创建和 Node.js 的 package 创建相似。每个节点由三个文件组成：</p>
+<ul>
+<li><p>nodeName.js，该文件定义了节点的运行时的行为，包括接收信息，处理信息，传送信息，记录事件等。</p></li>
+<li><p>nodeName.html，该文件定义了节点在编辑器中的显示方式，包括显示的节点名称，用户输入的对话框，以及侧边栏显示的帮助文本。</p></li>
+<li><p>package.json，Node.js 模块用来描述其内容的标准文件，实现 npm 管理，处理依赖关系，并将所有文件打包为一个模块。</p></li>
+</ul>
+<p><strong>DHash 节点</strong></p>
+<p>由于求图片的 Difference Hash 是一个异步操作，使用 async 和 await 关键字对进程进行同步。</p>
+<p><strong>dhash.js</strong></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a><span class="kw">const</span> { DHash } <span class="op">=</span> <span class="pp">require</span>(<span class="st">&quot;./imageHash&quot;</span>)<span class="op">;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true"></a>module<span class="op">.</span><span class="at">exports</span> <span class="op">=</span> <span class="kw">function</span> (RED) {</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true"></a>  <span class="kw">function</span> <span class="fu">getDHash</span>(config) {</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true"></a>    RED<span class="op">.</span><span class="at">nodes</span><span class="op">.</span><span class="fu">createNode</span>(<span class="kw">this</span><span class="op">,</span> config)<span class="op">;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true"></a>    <span class="kw">var</span> node <span class="op">=</span> <span class="kw">this</span><span class="op">;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true"></a>    node<span class="op">.</span><span class="fu">on</span>(<span class="st">&quot;input&quot;</span><span class="op">,</span> <span class="kw">async</span> <span class="kw">function</span> (msg) {</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true"></a>      msg<span class="op">.</span><span class="at">payload</span> <span class="op">=</span> msg<span class="op">.</span><span class="at">payload</span><span class="op">.</span><span class="at">imgPath</span><span class="op">;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true"></a>      msg<span class="op">.</span><span class="at">payload</span><span class="op">.</span><span class="at">hash</span> <span class="op">=</span> <span class="cf">await</span> <span class="fu">DHash</span>(imgPath)<span class="op">;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true"></a>      node<span class="op">.</span><span class="fu">send</span>(msg)<span class="op">;</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true"></a>    })<span class="op">;</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true"></a>  }</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true"></a>  RED<span class="op">.</span><span class="at">nodes</span><span class="op">.</span><span class="fu">registerType</span>(<span class="st">&quot;lower-case&quot;</span><span class="op">,</span> LowerCaseNode)<span class="op">;</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
+<p><strong>dhash.html</strong></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="kw">&lt;script</span><span class="ot"> type=</span><span class="st">&quot;text/javascript&quot;</span><span class="kw">&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>  RED<span class="op">.</span><span class="at">nodes</span><span class="op">.</span><span class="fu">registerType</span>(<span class="st">&quot;lower-case&quot;</span><span class="op">,</span> {</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a>    <span class="dt">category</span><span class="op">:</span> <span class="st">&quot;input&quot;</span><span class="op">,</span> <span class="co">//父标签</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true"></a>    <span class="dt">color</span><span class="op">:</span> <span class="st">&quot;#a6bbcf&quot;</span><span class="op">,</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true"></a>    <span class="dt">defaults</span><span class="op">:</span> {</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true"></a>      <span class="dt">name</span><span class="op">:</span> { <span class="dt">value</span><span class="op">:</span> <span class="st">&quot;&quot;</span> }<span class="op">,</span> <span class="co">//向后端传值</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true"></a>    }<span class="op">,</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true"></a>    <span class="dt">inputs</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="co">//输入口</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true"></a>    <span class="dt">outputs</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="co">//输出口</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true"></a>    <span class="dt">icon</span><span class="op">:</span> <span class="st">&quot;file.png&quot;</span><span class="op">,</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true"></a>    <span class="dt">label</span><span class="op">:</span> <span class="kw">function</span> () {</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true"></a>      <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="at">name</span> <span class="op">||</span> <span class="st">&quot;sample&quot;</span><span class="op">;</span> <span class="co">//显示标签名</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true"></a>    }<span class="op">,</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true"></a>  })<span class="op">;</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true"></a><span class="kw">&lt;/script&gt;</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true"></a>...</span></code></pre></div>
+<p><strong>package.json</strong></p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true"></a><span class="fu">{</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true"></a>    <span class="dt">&quot;name&quot;</span> <span class="fu">:</span> <span class="st">&quot;difference-hash&quot;</span><span class="fu">,</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true"></a>    <span class="er">...</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true"></a>    <span class="dt">&quot;node-red&quot;</span> <span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true"></a>        <span class="dt">&quot;nodes&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true"></a>            <span class="dt">&quot;lower-case&quot;</span><span class="fu">:</span> <span class="st">&quot;lower-case.js&quot;</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true"></a>        <span class="fu">}</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true"></a>    <span class="fu">}</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true"></a><span class="fu">}</span></span></code></pre></div>
+<footer>
+  <hr />
+  <p>
+    <a href="../">
+      <span>← 返回上一级</span>
+    </a>
+  </p>
+  <p>
+    <span>许可证：</span>
+    <span
+      ><a
+        rel="license noopener"
+        href="https://creativecommons.org/licenses/by-nc-nd/4.0/"
+        target="_blank"
+        >CC BY-NC-ND 4.0</a
+      ></span
+    >
+  </p>
+</footer>
+</body>
+</html>

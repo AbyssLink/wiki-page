@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>个人常用命令</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">个人常用命令</h1>
+<p class="date">2020-02-06T18:11:33+08:00</p>
+</header>
+<p>As a command manual tool, instead of <code>man</code>, <code>tldr</code> is very simple and easy to use, and can list some common usages of commands.</p>
+<h2 id="linux-networktools">Linux NetWorkTools</h2>
+<p>In general, Linux network commands involve so few pieces:</p>
+<ul>
+<li>Network Configuration： ifconfig、 ip</li>
+<li>Connectivity detection： ping、 traceroute、 telnet、 mtr</li>
+<li>Internet connection： netstat、 ss、 nc、 lsof</li>
+<li>Traffic Statistics： ifstat、 sar、 iftop</li>
+<li>Switching and routing： arp、 arping、 vconfig、 route</li>
+<li>Firewall： iptables、 ipset</li>
+<li>DNS： host、 nslookup、 dig、 whois</li>
+<li>Capture： tcpdump</li>
+<li>Virtual device： tunctl、 brctl、 ovs</li>
+</ul>
+<h2 id="deploy-and-maintain-in-the-server">deploy and maintain in the server:</h2>
+<ul>
+<li>Docker + Terraform</li>
+<li>ansible-playbook</li>
+<li>simple way: write a shell and manage it with systemd</li>
+</ul>
+<h2 id="man">Man</h2>
+<p>References: https://wiki.gentoo.org/wiki/Man_page/Navigate</p>
+<table>
+<thead>
+<tr class="header">
+<th>useage</th>
+<th>operate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Forwad one line</td>
+<td><code>j</code> or <code>e</code></td>
+</tr>
+<tr class="even">
+<td>Backward one line</td>
+<td><code>k</code> or <code>y</code></td>
+</tr>
+<tr class="odd">
+<td>Forward one window</td>
+<td><code>f</code> or <code>space</code></td>
+</tr>
+<tr class="even">
+<td>Backward one window</td>
+<td><code>b</code> or <code>ESC-v</code></td>
+</tr>
+<tr class="odd">
+<td>Foward one half window</td>
+<td><code>d</code></td>
+</tr>
+<tr class="even">
+<td>Backword one half window</td>
+<td><code>u</code></td>
+</tr>
+<tr class="odd">
+<td>Search partteron</td>
+<td><code>/</code> then <code>&lt;pattern&gt;</code></td>
+</tr>
+<tr class="even">
+<td>next matching</td>
+<td><code>n</code></td>
+</tr>
+<tr class="odd">
+<td>previous matching</td>
+<td><code>shift</code> + <code>n</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="network-tools">NetWork Tools</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co"># View export ip from command line</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="ex">http</span> ifconfig.co/json</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="ex">http</span> myip.ipip.net</span></code></pre></div>
+<h2 id="download">Download</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="co"># references: https://unix.stackexchange.com/questions/272868/download-only-format-mp4-on-youtube-dl</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="co"># download youtube videos use mp4 format and with auto generated subtitle</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a><span class="ex">youtube-dl</span> -f <span class="st">&#39;bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4&#39;</span> --auto-number --write-auto-sub <span class="op">&lt;</span>url<span class="op">&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a><span class="co"># or</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a><span class="ex">youtube-dl</span> -f <span class="st">&#39;bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4&#39;</span> -o <span class="st">&quot;%(playlist_index)s-%(title)s.%(ext)s&quot;</span> --write-auto-sub <span class="op">&lt;</span>url<span class="op">&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a><span class="co"># download selected subtitle</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a><span class="ex">youtube-dl</span> -f <span class="st">&#39;bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4&#39;</span> -o <span class="st">&quot;%(playlist_index)s-%(title)s.%(ext)s&quot;</span> --write-sub --sub-lang en <span class="op">&lt;</span>url<span class="op">&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a><span class="co"># download only subtitles</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a><span class="ex">youtube-dl</span> --write-sub --sub-lang en --skip-download <span class="op">&lt;</span>url<span class="op">&gt;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a><span class="co"># convert to mp3 and add thumbnail and video information</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a><span class="ex">youtube-dl</span> -x --audio-format mp3 --embed-thumbnail --add-metadata <span class="op">&lt;</span>url<span class="op">&gt;</span></span></code></pre></div>
+<h2 id="network-proxy">Network Proxy</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="co"># check ip</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a><span class="ex">curl</span> cip.cc</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a><span class="ex">http</span> ifconfig.co/json</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a><span class="ex">curl</span> ifconfig.co</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a><span class="ex">curl</span> ipinfo.io</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a><span class="co"># Set ssh specific ip proxy</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a><span class="ex">Host</span> xx.xx.xx.xx</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a>  <span class="ex">HostName</span> xx.xx.xx.xx</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>  <span class="ex">ProxyCommand</span> nc -X 5 -x 127.0.0.1:7891 %h %p</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a>  <span class="ex">ServerAliveInterval</span> 30</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a><span class="co"># set curl proxy</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a><span class="co"># modify curl configuration file</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a><span class="ex">vim</span> ~/.curlrc</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a><span class="co"># write this line</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a><span class="ex">socks5</span> = <span class="st">&quot;127.0.0.1:&lt;prot_number&gt;&quot;</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a><span class="co"># If the proxy is not needed temporarily use the following parameters</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true"></a><span class="ex">curl</span> --noproxy <span class="st">&quot;*&quot;</span> http://www.google.com</span></code></pre></div>
+<h2 id="imagemagick">ImageMagick</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="co"># view picture information</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="ex">identify</span> image.png</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="co"># format conversion</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a><span class="ex">convert</span> a.gif a.png</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a><span class="co"># batch format conversion</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">f</span> in *png<span class="kw">;</span> <span class="kw">do</span> <span class="ex">convert</span> <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$f</span><span class="st">.jpg&quot;</span><span class="kw">;</span> <span class="kw">done</span>;</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a><span class="co"># for Github Pic bed</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a><span class="ex">mogrify</span> -quality 75 -resize 1500x1000 *.jpg</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true"></a><span class="co"># adjust size, resolution, quality</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true"></a><span class="ex">convert</span> image -resize 1200x1200 -density 72 -quality 75 resultimage</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true"></a><span class="co"># convert a group of pictures to gif</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true"></a><span class="ex">mogrify</span> -path newdir -format png  *.gif</span></code></pre></div>
+<h2 id="ffmpeg">FFmpeg</h2>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="co"># view video information</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="ex">ffprobe</span> example.mkv</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a><span class="co"># format conversion</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="ex">ffmpeg</span> -i example.mkv -c copy example.mp4</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a><span class="co"># adjust bit rate</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a><span class="ex">ffmpeg</span> -i input.avi -b:v 1500K output.mp4</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="ex">ffmpeg</span> -i file.avi -b 1.5M file.mp4</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a><span class="co"># adjust dimension</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a><span class="ex">ffmpeg</span> -i input.avi -vf scale=1920:-2 output.mp4</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a><span class="co"># adjust frames</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a><span class="ex">ffmpeg</span> -i input.avi -r 30 output.mp4</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a><span class="co"># adjust resolution</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a><span class="ex">ffmpeg</span> -i input.jpg -vf scale=1080:-2 out.jpg</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a><span class="co"># ** Batch Process **</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a><span class="co"># Unix one-liner example i.e. MacOS/Linux</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">f</span> in *.mkv<span class="kw">;</span> <span class="kw">do</span> <span class="ex">ffmpeg</span> -i <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span> -c copy <span class="st">&quot;</span><span class="va">${f%</span>.mkv<span class="va">}</span><span class="st">.mp4&quot;</span><span class="kw">;</span> <span class="kw">done</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true"></a><span class="co"># Windows one-liner example</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">/R</span> %f IN (*.mkv) <span class="ex">DO</span> ffmpeg -i <span class="st">&quot;%f&quot;</span> -c copy <span class="st">&quot;%~nf.mp4&quot;</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true"></a></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true"></a><span class="co"># Batch convert to mp3</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true"></a><span class="co"># only mp4</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true"></a><span class="fu">mkdir</span> outputs</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">f</span> in *.mp4<span class="kw">;</span> <span class="kw">do</span> <span class="ex">ffmpeg</span> -i <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span> -c:a libmp3lame <span class="st">&quot;outputs/</span><span class="va">${f%</span>.mp4<span class="va">}</span><span class="st">.mp3&quot;</span><span class="kw">;</span> <span class="kw">done</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true"></a></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true"></a><span class="co"># m4a, mov and flac</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true"></a><span class="fu">mkdir</span> outputs</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true"></a><span class="kw">for</span> <span class="ex">f</span> in *.<span class="dt">{m4a,mov,flac}</span><span class="kw">;</span> <span class="kw">do</span> <span class="ex">ffmpeg</span> -i <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span> -c:a libmp3lame <span class="st">&quot;outputs/</span><span class="va">${f%</span>.*<span class="va">}</span><span class="st">.mp3&quot;</span><span class="kw">;</span> <span class="kw">done</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true"></a><span class="co"># speed the videos</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true"></a><span class="ex">ffmpeg</span> -i input.mkv -filter_complex <span class="st">&quot;[0:v]setpts=0.5*PTS[v];[0:a]atempo=2.0[a]&quot;</span> -map <span class="st">&quot;[v]&quot;</span> -map <span class="st">&quot;[a]&quot;</span> output.mkv</span></code></pre></div>
+<h2 id="files">Files</h2>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="co"># view file encoding</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="fu">file</span> test.py</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a><span class="co"># sort and view the current file (folder) size</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a><span class="fu">du</span> -sh * <span class="kw">|</span> <span class="fu">sort</span> -h</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a><span class="co"># view file hashes</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a><span class="ex">md5</span> /path/to/file</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a><span class="ex">shasum</span> -a 1 /path/to/file</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a><span class="ex">shasum</span> -a 256 /path/to/file</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a><span class="ex">shasum</span> -a 512 /path/to/file</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a><span class="co"># the &quot;Text Editing&quot; application is opened in simplified Chinese by default</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a><span class="ex">defaults</span> write com.apple.TextEdit AppleLanguages <span class="st">&#39;(zh-CN)&#39;</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true"></a><span class="co"># recover</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true"></a><span class="ex">defaults</span> write com.apple.TextEdit AppleLanguages <span class="st">&#39;(en-US)&#39;</span></span></code></pre></div>
+<footer>
+  <hr />
+  <p>
+    <a href="../">
+      <span>← 返回上一级</span>
+    </a>
+  </p>
+  <p>
+    <span>许可证：</span>
+    <span
+      ><a
+        rel="license noopener"
+        href="https://creativecommons.org/licenses/by-nc-nd/4.0/"
+        target="_blank"
+        >CC BY-NC-ND 4.0</a
+      ></span
+    >
+  </p>
+</footer>
+</body>
+</html>
